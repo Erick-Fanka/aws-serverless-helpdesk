@@ -6,8 +6,10 @@
 
 [![AWS](https://img.shields.io/badge/AWS-Cloud-orange?style=for-the-badge&logo=amazon-aws&logoColor=white)](https://aws.amazon.com/)
 [![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Youtube](https://img.shields.io/badge/Youtube-red?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/WeUmvWV9AGY)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Lab%20finalizado-lightgrey?style=for-the-badge)](#)
+
 
 <p align="center">
   <a href="#-sobre">Sobre</a> •
@@ -131,11 +133,9 @@ Erros reais que apareceram durante o projeto:
 - **Palavra reservada:** `status` é reservada no DynamoDB, e a solução foi o apelido `#s` na expressão.
 - **Regra no banco:** o `ConditionExpression` impede encerrar um chamado que não existe ou que já foi encerrado (`409`).
 - **Acentos no `curl`:** o `json.dumps` escapa acentos por padrão, e `ensure_ascii=False` resolve.
-- **HTTP API não tem chave de API:** isso é recurso da REST API. Aqui a chave é conferida dentro da Lambda.
 
 ### 🚧 Limitações conhecidas
 
-- A chave de API fica no JavaScript do frontend, então qualquer visitante consegue vê-la. Ela impede quem só tem a URL, mas **não é autenticação**.
 - O relatório usa `scan`, o que é aceitável em volume pequeno.
 - Sem domínio nem HTTPS no frontend (o endpoint de website do S3 é HTTP), por ser um lab temporário.
 
