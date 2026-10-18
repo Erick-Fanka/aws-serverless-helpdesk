@@ -43,7 +43,7 @@ O sistema permite:
 ![Arquitetura](docs/arquitetura.png)
 
 1. O navegador carrega a página (HTML + JS) do **S3**.
-2. O JavaScript chama a API com `fetch` (JSON + `x-api-key`).
+2. O JavaScript chama a API com `fetch`.
 3. O **API Gateway** encaminha a rota para a **Lambda**.
 4. A Lambda lê e grava no **DynamoDB** e registra logs no **CloudWatch**.
 
@@ -60,8 +60,7 @@ O sistema permite:
 ---
 
 ## 🔌 Rotas da API
-
-Todas exigem o cabeçalho `x-api-key` (sem ele, a resposta é `401`).
+.
 
 | Método e caminho | O que faz | Respostas |
 |---|---|---|
@@ -103,9 +102,9 @@ aws-serverless-helpdesk/
 ## 🚀 Como reproduzir
 
 1. Criar as tabelas `chamados` e `contadores` no DynamoDB (on-demand).
-2. Criar a Lambda `suporte` com a `LabRole` e a variável de ambiente `API_KEY`.
+2. Criar a Lambda `suporte` com a `LabRole`.
 3. Criar a HTTP API com as 4 rotas apontando para a Lambda.
-4. Configurar o CORS (`content-type` e `x-api-key` nos headers permitidos).
+4. Configurar o CORS (`content-type` nos headers permitidos).
 5. Publicar o `frontend/index.html` em um bucket S3 com site estático.
 
 O passo a passo completo, com um teste ao final de cada etapa, está no [guia](docs/guia-passo-a-passo.md).
