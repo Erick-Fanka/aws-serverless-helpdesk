@@ -1,0 +1,5 @@
+{
+    "_comment": "teste para consultar chamados",
+    "routeKey":"GET /chamados/{numero}",
+    "pathParameters":{"numero":"1001"}
+}

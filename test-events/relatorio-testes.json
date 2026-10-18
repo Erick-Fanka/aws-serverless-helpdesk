@@ -1,0 +1,4 @@
+{
+    "_comment":"consulta relatorios de chamados",
+    "routeKey":"GET /chamados/relatorio"
+}
