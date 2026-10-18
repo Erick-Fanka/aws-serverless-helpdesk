@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Central de chamados</title>
+<style>
+:root{--fundo:#EEF1F5;--papel:#fff;--tinta:#1B2430;--suave:#5B6675;--linha:#D5DBE3;--acento:#0F5E73;--aberto:#9A5B00;--encerrado:#4B5563;--erro:#A32020}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fundo);color:var(--tinta);font:16px/1.55 "Segoe UI",system-ui,sans-serif}
+main{max-width:680px;margin:0 auto;padding:40px 20px 64px}
+h1{font-size:1.9rem;line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:var(--suave);margin:0 0 20px}
+h2{font-size:1.1rem;margin:0 0 14px}
+section{padding:24px 0;border-top:1px solid var(--linha)}
+label{display:block;font-weight:600;font-size:.9rem;margin-bottom:4px}
+input,select{width:100%;padding:10px 12px;margin-bottom:14px;border:1px solid #AEB7C4;border-radius:6px;background:var(--papel);font:inherit;color:inherit}
+button{font:inherit;font-weight:600;padding:10px 18px;border-radius:6px;border:1px solid var(--acento);background:var(--acento);color:#fff;cursor:pointer}
+button.sec{background:transparent;color:var(--acento)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #7FB7C8;outline-offset:2px}
+.acoes{display:flex;gap:10px;flex-wrap:wrap}
+#saida{min-height:1.5rem;margin-bottom:20px}
+.msg{padding:12px 14px;border-left:4px solid var(--acento);background:var(--papel)}
+.msg.erro{border-color:var(--erro);color:var(--erro)}
+.ticket{background:var(--papel);border:1px solid var(--linha);border-left:6px solid var(--acento);border-radius:6px;padding:16px 18px}
+.num{font-size:1.5rem;font-weight:700}
+.pill{display:inline-block;margin-left:10px;padding:2px 10px;border-radius:99px;font-size:.85rem;font-weight:600;color:#fff;vertical-align:middle}
+.pill.Aberto{background:var(--aberto)}
+.pill.Encerrado{background:var(--encerrado)}
+.ticket p{margin:6px 0 0}
+.meta{color:var(--suave);font-size:.92rem}
+ul.rel{list-style:none;margin:0;padding:0;background:var(--papel);border:1px solid var(--linha);border-radius:6px}
+ul.rel li{display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--linha)}
+ul.rel li:last-child{border-bottom:0;font-weight:700}
+</style>
+</head>
+<body>
+<main>
+  <h1>Central de chamados</h1>
+  <p class="sub">Abra, consulte e encerre chamados de TI, RH e Financeiro.</p>
+
+  <div id="saida" aria-live="polite"></div>
+
+  <section>
+    <h2>Abrir chamado</h2>
+    <form id="form-abrir">
+      <label for="nome">Seu nome</label>
+      <input id="nome" required maxlength="80" autocomplete="name">
+      <label for="assunto">Assunto</label>
+      <input id="assunto" required maxlength="200">
+      <label for="setor">Setor</label>
+      <select id="setor">
+        <option value="TI">TI</option>
+        <option value="RH">RH</option>
+        <option value="FINANCEIRO">Financeiro</option>
+      </select>
+      <button type="submit">Abrir chamado</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Consultar ou encerrar</h2>
+    <label for="numero">Número do chamado</label>
+    <input id="numero" type="number" min="1" inputmode="numeric">
+    <div class="acoes">
+      <button type="button" id="btn-consultar">Consultar</button>
+      <button type="button" id="btn-encerrar" class="sec">Encerrar chamado</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Relatório</h2>
+    <button type="button" id="btn-relatorio">Ver relatório</button>
+  </section>
+</main>
+
+<script>
+
+const API_URL = "INVOKE_URL";
+
+const saida = document.getElementById("saida");
+
+async function chamar(metodo, caminho, corpo) {
+  const opcoes = { method: metodo };
+  if (corpo) {
+    opcoes.headers = { "Content-Type": "application/json" };
+    opcoes.body = JSON.stringify(corpo);
+  }
+  try {
+    const resp = await fetch(API_URL.replace(/\/$/, "") + caminho, opcoes);
+    const dados = await resp.json().catch(() => ({}));
+    return { ok: resp.ok, dados };
+  } catch (e) {
+   
+    return { ok: false, dados: { erro: "Não foi possível falar com a API. Verifique a URL e o CORS." } };
+  }
+}
+
+function mostrarMensagem(texto, erro) {
+  saida.replaceChildren();
+  const div = document.createElement("div");
+  div.className = "msg" + (erro ? " erro" : "");
+  div.textContent = texto; 
+  saida.append(div);
+  saida.scrollIntoView({ block: "nearest" });
+}
+
+function mostrarChamado(c) {
+  saida.replaceChildren();
+  const box = document.createElement("div");
+  box.className = "ticket";
+
+  const topo = document.createElement("div");
+  const num = document.createElement("span");
+  num.className = "num";
+  num.textContent = "Chamado " + c.numero;
+  const pill = document.createElement("span");
+  pill.className = "pill " + c.status;
+  pill.textContent = c.status;
+  topo.append(num, pill);
+
+  const assunto = document.createElement("p");
+  assunto.textContent = c.assunto;
+  const meta = document.createElement("p");
+  meta.className = "meta";
+  meta.textContent = c.nome + " — " + c.setor;
+
+  box.append(topo, assunto, meta);
+  saida.append(box);
+  saida.scrollIntoView({ block: "nearest" });
+}
+
+function lerNumero() {
+  const n = parseInt(document.getElementById("numero").value, 10);
+  if (!Number.isInteger(n)) {
+    mostrarMensagem("Informe o número do chamado.", true);
+    return null;
+  }
+  return n;
+}
+
+document.getElementById("form-abrir").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const corpo = {
+    nome: document.getElementById("nome").value,
+    assunto: document.getElementById("assunto").value,
+    setor: document.getElementById("setor").value,
+  };
+  const { ok, dados } = await chamar("POST", "/chamados", corpo);
+  if (!ok) return mostrarMensagem(dados.erro || "Não foi possível abrir o chamado.", true);
+  mostrarMensagem("Chamado " + dados.numero + " aberto. Guarde esse número para consultar depois.");
+  e.target.reset();
+});
+
+document.getElementById("btn-consultar").addEventListener("click", async () => {
+  const n = lerNumero();
+  if (n === null) return;
+  const { ok, dados } = await chamar("GET", "/chamados/" + n);
+  if (!ok) return mostrarMensagem(dados.erro || "Não foi possível consultar o chamado.", true);
+  mostrarChamado(dados);
+});
+
+document.getElementById("btn-encerrar").addEventListener("click", async () => {
+  const n = lerNumero();
+  if (n === null) return;
+  const { ok, dados } = await chamar("PATCH", "/chamados/" + n + "/encerrar");
+  if (!ok) return mostrarMensagem(dados.erro || "Não foi possível encerrar o chamado.", true);
+  mostrarMensagem("Chamado " + n + " encerrado.");
+});
+
+document.getElementById("btn-relatorio").addEventListener("click", async () => {
+  const { ok, dados } = await chamar("GET", "/chamados/relatorio");
+  if (!ok) return mostrarMensagem(dados.erro || "Não foi possível gerar o relatório.", true);
+  saida.replaceChildren();
+  const lista = document.createElement("ul");
+  lista.className = "rel";
+  const linhas = Object.entries(dados.por_setor).concat([["Total", dados.total]]);
+  for (const [nome, qtd] of linhas) {
+    const li = document.createElement("li");
+    const a = document.createElement("span");
+    a.textContent = nome;
+    const b = document.createElement("span");
+    b.textContent = qtd;
+    li.append(a, b);
+    lista.append(li);
+  }
+  saida.append(lista);
+  saida.scrollIntoView({ block: "nearest" });
+});
+</script>
+</body>
+</html>
